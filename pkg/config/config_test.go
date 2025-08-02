@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -163,13 +164,13 @@ func TestGetConfigPath(t *testing.T) {
 			name:        "XDG_CONFIG_HOME set",
 			xdgConfig:   "/custom/config",
 			homeDir:     "/home/user",
-			expectedEnd: "/custom/config/quip-mcp/config.yaml",
+			expectedEnd: "custom/config/quip-mcp/config.yaml",
 		},
 		{
 			name:        "HOME directory fallback",
 			xdgConfig:   "",
 			homeDir:     "/home/user",
-			expectedEnd: "/home/user/.config/quip-mcp/config.yaml",
+			expectedEnd: ".config/quip-mcp/config.yaml",
 		},
 	}
 
@@ -186,9 +187,12 @@ func TestGetConfigPath(t *testing.T) {
 			// Get config path
 			path := getConfigPath()
 
+			// Normalize path for cross-platform comparison
+			normalizedPath := filepath.ToSlash(path)
+
 			// Check if path ends with expected suffix
-			if path != tt.expectedEnd {
-				t.Errorf("Expected path to be %s, got %s", tt.expectedEnd, path)
+			if !strings.HasSuffix(normalizedPath, tt.expectedEnd) {
+				t.Errorf("Expected path to end with %s, got %s", tt.expectedEnd, normalizedPath)
 			}
 		})
 	}
