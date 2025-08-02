@@ -1,0 +1,11 @@
+# Quip MCP Server Configuration
+# Place this file at ~/.config/quip-mcp/config.yaml
+
+# Your Quip API token (get it from https://quip.com/dev/token)
+quip_api_token: your-quip-api-token-here
+
+# Alternative formats that are also supported:
+# JSON format is also supported in the same location:
+# {
+#   "quip_api_token": "your-quip-api-token-here"
+# } 

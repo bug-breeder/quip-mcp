@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "quip": {
+      "command": "quip-mcp",
+      "args": [],
+      "env": {
+        "QUIP_API_TOKEN": "your-quip-api-token-here"
+      }
+    }
+  }
+} 
