@@ -1,5 +1,7 @@
 # Quip MCP Server
 
+[![Add to Cursor](https://img.shields.io/badge/Add%20to-Cursor-blue?style=for-the-badge&logo=cursor)](cursor://anysphere.cursor-deeplink/mcp/install?name=quip-mcp&config=eyJjb21tYW5kIjogInF1aXAtbWNwIiwgImFyZ3MiOiBbXX0K)
+
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that provides AI assistants with access to Quip documents and collaboration features.
 
 ## ✨ Features
@@ -16,6 +18,13 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that pr
 ```bash
 curl -sSL https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/install.sh | bash
 ```
+
+### Install to Cursor (One-click)
+Click the button below to automatically add Quip MCP to your Cursor IDE:
+
+[![Add to Cursor](https://img.shields.io/badge/Add%20to-Cursor-blue?style=for-the-badge&logo=cursor)](cursor://anysphere.cursor-deeplink/mcp/install?name=quip-mcp&config=eyJjb21tYW5kIjogInF1aXAtbWNwIiwgImFyZ3MiOiBbXX0K)
+
+> **Note**: You'll still need to run `quip-mcp --setup` to configure your API token after installation.
 
 ### Manual download
 Download the appropriate binary for your platform from the [releases page](https://github.com/bug-breeder/quip-mcp/releases).
