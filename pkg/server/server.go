@@ -138,7 +138,7 @@ func (s *Server) registerTools() {
 			return mcp.NewToolResultError(fmt.Sprintf("Failed to create document: %v", err)), nil
 		}
 
-		response := fmt.Sprintf("✅ **Document created successfully!**\n\n")
+		response := "✅ **Document created successfully!**\n\n"
 		response += fmt.Sprintf("- **Title:** %s\n", doc.Title)
 		response += fmt.Sprintf("- **ID:** %s\n", doc.ID)
 		response += fmt.Sprintf("- **Link:** %s\n", doc.Link)

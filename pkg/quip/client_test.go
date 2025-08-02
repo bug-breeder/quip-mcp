@@ -50,7 +50,7 @@ func TestClient_GetCurrentUser(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(user)
+		_ = json.NewEncoder(w).Encode(user)
 	}))
 	defer server.Close()
 
@@ -81,7 +81,7 @@ func TestClient_GetCurrentUser_Error(t *testing.T) {
 	// Create a test server that returns an error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`{"error": "Invalid token"}`))
+		_, _ = w.Write([]byte(`{"error": "Invalid token"}`))
 	}))
 	defer server.Close()
 
@@ -138,7 +138,7 @@ func TestClient_SearchDocuments(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(result)
+		_ = json.NewEncoder(w).Encode(result)
 	}))
 	defer server.Close()
 
@@ -186,7 +186,7 @@ func TestClient_GetDocument(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(doc)
+		_ = json.NewEncoder(w).Encode(doc)
 	}))
 	defer server.Close()
 
@@ -253,7 +253,7 @@ func TestClient_CreateDocument(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(doc)
+		_ = json.NewEncoder(w).Encode(doc)
 	}))
 	defer server.Close()
 
@@ -297,7 +297,7 @@ func TestClient_GetDocumentComments(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(comments)
+		_ = json.NewEncoder(w).Encode(comments)
 	}))
 	defer server.Close()
 
@@ -343,7 +343,7 @@ func TestClient_GetUser(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(user)
+		_ = json.NewEncoder(w).Encode(user)
 	}))
 	defer server.Close()
 
