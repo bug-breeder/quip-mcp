@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -85,7 +86,7 @@ func NewClient(token string) *Client {
 	}
 }
 
-// makeRequest performs an HTTP request to the Quip API
+// makeRequest performs an HTTP request to the Quip API with JSON body
 func (c *Client) makeRequest(method, endpoint string, body interface{}) (*http.Response, error) {
 	var reqBody io.Reader
 	if body != nil {
@@ -120,6 +121,41 @@ func (c *Client) makeRequest(method, endpoint string, body interface{}) (*http.R
 	return resp, nil
 }
 
+// makeFormRequest performs an HTTP request to the Quip API with form-urlencoded body
+func (c *Client) makeFormRequest(method, endpoint string, formData map[string]string) (*http.Response, error) {
+	var reqBody io.Reader
+	if formData != nil {
+		values := url.Values{}
+		for key, value := range formData {
+			values.Set(key, value)
+		}
+		reqBody = strings.NewReader(values.Encode())
+	}
+
+	url := fmt.Sprintf("%s%s", c.baseURL, endpoint)
+	req, err := http.NewRequest(method, url, reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", "MCP-Quip-Server/1.0")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+
+	if resp.StatusCode >= 400 {
+		defer resp.Body.Close()
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	return resp, nil
+}
+
 // GetCurrentUser returns information about the current user
 func (c *Client) GetCurrentUser() (*User, error) {
 	resp, err := c.makeRequest("GET", "/users/current", nil)
@@ -138,7 +174,7 @@ func (c *Client) GetCurrentUser() (*User, error) {
 
 // SearchDocuments searches for documents
 func (c *Client) SearchDocuments(query string, limit int) (*SearchResult, error) {
-	endpoint := fmt.Sprintf("/search?query=%s&type=document", url.QueryEscape(query))
+	endpoint := fmt.Sprintf("/threads/search?query=%s", url.QueryEscape(query))
 	if limit > 0 {
 		endpoint += fmt.Sprintf("&count=%d", limit)
 	}
@@ -177,13 +213,13 @@ func (c *Client) GetDocument(id string) (*Document, error) {
 
 // CreateDocument creates a new document
 func (c *Client) CreateDocument(title, content string) (*Document, error) {
-	payload := map[string]interface{}{
+	formData := map[string]string{
 		"title":   title,
 		"content": content,
 		"format":  "html",
 	}
 
-	resp, err := c.makeRequest("POST", "/threads/new", payload)
+	resp, err := c.makeFormRequest("POST", "/threads/new-document", formData)
 	if err != nil {
 		return nil, err
 	}

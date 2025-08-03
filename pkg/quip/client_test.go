@@ -105,7 +105,7 @@ func TestClient_SearchDocuments(t *testing.T) {
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the request
-		expectedPath := "/search"
+		expectedPath := "/threads/search"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
 		}
@@ -113,11 +113,6 @@ func TestClient_SearchDocuments(t *testing.T) {
 		query := r.URL.Query().Get("query")
 		if query != "test query" {
 			t.Errorf("Expected query 'test query', got %s", query)
-		}
-
-		typeParam := r.URL.Query().Get("type")
-		if typeParam != "document" {
-			t.Errorf("Expected type 'document', got %s", typeParam)
 		}
 
 		count := r.URL.Query().Get("count")
@@ -217,7 +212,7 @@ func TestClient_CreateDocument(t *testing.T) {
 	// Create a test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the request
-		expectedPath := "/threads/new"
+		expectedPath := "/threads/new-document"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
 		}
@@ -226,19 +221,28 @@ func TestClient_CreateDocument(t *testing.T) {
 			t.Errorf("Expected POST method, got %s", r.Method)
 		}
 
-		// Verify request body
-		var payload map[string]interface{}
-		err := json.NewDecoder(r.Body).Decode(&payload)
+		// Verify content type
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "application/x-www-form-urlencoded" {
+			t.Errorf("Expected Content-Type 'application/x-www-form-urlencoded', got %s", contentType)
+		}
+
+		// Verify form data
+		err := r.ParseForm()
 		if err != nil {
-			t.Fatalf("Failed to decode request body: %v", err)
+			t.Fatalf("Failed to parse form data: %v", err)
 		}
 
-		if payload["title"] != "New Document" {
-			t.Errorf("Expected title 'New Document', got %v", payload["title"])
+		if r.FormValue("title") != "New Document" {
+			t.Errorf("Expected title 'New Document', got %s", r.FormValue("title"))
 		}
 
-		if payload["content"] != "<p>New content</p>" {
-			t.Errorf("Expected content '<p>New content</p>', got %v", payload["content"])
+		if r.FormValue("content") != "<p>New content</p>" {
+			t.Errorf("Expected content '<p>New content</p>', got %s", r.FormValue("content"))
+		}
+
+		if r.FormValue("format") != "html" {
+			t.Errorf("Expected format 'html', got %s", r.FormValue("format"))
 		}
 
 		// Return mock created document
