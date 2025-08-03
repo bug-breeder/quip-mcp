@@ -31,6 +31,25 @@ After installing the binary, click the button below to add the MCP server config
 
 > **Note**: This button only adds the MCP configuration to Cursor. You must install the `quip-mcp` binary first (Step 1).
 
+## 🔄 Updates
+
+### Quick Update
+Update to the latest version with one command:
+```bash
+curl -sSL https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/install.sh | bash -s -- --update
+```
+
+The update script will:
+- ✅ Check your current version
+- ✅ Skip update if you already have the latest version
+- ✅ Only install if a newer version is available
+- ✅ Preserve your existing configuration
+
+### Check Current Version
+```bash
+quip-mcp --version
+```
+
 ## ⚡ Quick Start
 
 1. **Get your API token**
