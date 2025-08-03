@@ -120,10 +120,10 @@ func TestClient_SearchDocuments(t *testing.T) {
 			t.Errorf("Expected count '5', got %s", count)
 		}
 
-		// Return mock search results
-		result := SearchResult{
-			Documents: []Document{
-				{
+		// Return mock search results in actual API format (array of SearchResponse)
+		apiResponse := []SearchResponse{
+			{
+				Thread: Document{
 					ID:       "doc123",
 					Title:    "Test Document",
 					Link:     "https://quip.com/doc123",
@@ -133,7 +133,7 @@ func TestClient_SearchDocuments(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(result)
+		_ = json.NewEncoder(w).Encode(apiResponse)
 	}))
 	defer server.Close()
 

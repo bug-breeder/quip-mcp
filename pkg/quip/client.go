@@ -64,6 +64,11 @@ type SearchResult struct {
 	NextCursor string     `json:"next_cursor,omitempty"`
 }
 
+// SearchResponse represents the actual API response structure for search
+type SearchResponse struct {
+	Thread Document `json:"thread"`
+}
+
 // Comment represents a document comment
 type Comment struct {
 	ID       string `json:"id"`
@@ -185,12 +190,23 @@ func (c *Client) SearchDocuments(query string, limit int) (*SearchResult, error)
 	}
 	defer resp.Body.Close()
 
-	var result SearchResult
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	// The API returns an array of objects with "thread" property
+	var apiResponse []SearchResponse
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	return &result, nil
+	// Transform the response to our expected format
+	result := &SearchResult{
+		Documents: make([]Document, len(apiResponse)),
+		Users:     []User{}, // Search API doesn't return users
+	}
+
+	for i, item := range apiResponse {
+		result.Documents[i] = item.Thread
+	}
+
+	return result, nil
 }
 
 // GetDocument retrieves a document by ID
