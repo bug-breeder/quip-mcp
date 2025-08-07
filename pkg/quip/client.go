@@ -209,9 +209,9 @@ func (c *Client) SearchDocuments(query string, limit int) (*SearchResult, error)
 	return result, nil
 }
 
-// GetDocument retrieves a document by ID
+// GetDocument retrieves a document by ID using the v2 API with markdown format
 func (c *Client) GetDocument(id string) (*Document, error) {
-	endpoint := fmt.Sprintf("/threads/%s", id)
+	endpoint := fmt.Sprintf("/threads/%s?format=markdown", id)
 
 	resp, err := c.makeRequest("GET", endpoint, nil)
 	if err != nil {
@@ -265,6 +265,72 @@ func (c *Client) GetDocumentComments(documentID string) ([]Comment, error) {
 	}
 
 	return comments, nil
+}
+
+// EditDocument edits an existing document
+func (c *Client) EditDocument(documentID, content, operation, format string) (*Document, error) {
+	formData := map[string]string{
+		"content": content,
+	}
+	
+	if operation != "" {
+		formData["operation"] = operation
+	} else {
+		formData["operation"] = "REPLACE"
+	}
+	
+	if format != "" {
+		formData["format"] = format
+	} else {
+		formData["format"] = "html"
+	}
+
+	endpoint := fmt.Sprintf("/threads/edit-document/%s", documentID)
+	resp, err := c.makeFormRequest("POST", endpoint, formData)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var doc Document
+	if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &doc, nil
+}
+
+// DeleteDocument deletes a document
+func (c *Client) DeleteDocument(documentID string) error {
+	endpoint := fmt.Sprintf("/threads/delete/%s", documentID)
+	resp, err := c.makeRequest("POST", endpoint, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+// GetRecentThreads retrieves recent threads for the current user
+func (c *Client) GetRecentThreads(limit int) ([]Document, error) {
+	endpoint := "/threads/recent"
+	if limit > 0 {
+		endpoint += fmt.Sprintf("?count=%d", limit)
+	}
+
+	resp, err := c.makeRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var threads []Document
+	if err := json.NewDecoder(resp.Body).Decode(&threads); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return threads, nil
 }
 
 // GetUser retrieves user information by ID

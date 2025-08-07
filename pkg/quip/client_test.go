@@ -170,6 +170,12 @@ func TestClient_GetDocument(t *testing.T) {
 			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
 		}
 
+		// Verify format=markdown query parameter
+		format := r.URL.Query().Get("format")
+		if format != "markdown" {
+			t.Errorf("Expected format 'markdown', got %s", format)
+		}
+
 		// Return mock document data
 		doc := Document{
 			ID:       "doc123",
@@ -367,5 +373,172 @@ func TestClient_GetUser(t *testing.T) {
 
 	if user.Name != "John Doe" {
 		t.Errorf("Expected user name 'John Doe', got %s", user.Name)
+	}
+}
+
+func TestClient_EditDocument(t *testing.T) {
+	// Create a test server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify the request
+		expectedPath := "/threads/edit-document/doc123"
+		if r.URL.Path != expectedPath {
+			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+
+		// Verify content type
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "application/x-www-form-urlencoded" {
+			t.Errorf("Expected Content-Type 'application/x-www-form-urlencoded', got %s", contentType)
+		}
+
+		// Verify form data
+		err := r.ParseForm()
+		if err != nil {
+			t.Fatalf("Failed to parse form data: %v", err)
+		}
+
+		if r.FormValue("content") != "<p>Updated content</p>" {
+			t.Errorf("Expected content '<p>Updated content</p>', got %s", r.FormValue("content"))
+		}
+
+		if r.FormValue("operation") != "REPLACE" {
+			t.Errorf("Expected operation 'REPLACE', got %s", r.FormValue("operation"))
+		}
+
+		if r.FormValue("format") != "html" {
+			t.Errorf("Expected format 'html', got %s", r.FormValue("format"))
+		}
+
+		// Return mock updated document
+		doc := Document{
+			ID:       "doc123",
+			Title:    "Updated Document",
+			HTML:     "<p>Updated content</p>",
+			Link:     "https://quip.com/doc123",
+			AuthorID: "user123",
+			Type:     "document",
+			Updated:  1640995300000000, // Mock timestamp
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(doc)
+	}))
+	defer server.Close()
+
+	// Create client with test server URL
+	client := NewClient("test-token")
+	client.baseURL = server.URL
+
+	// Test the method
+	doc, err := client.EditDocument("doc123", "<p>Updated content</p>", "REPLACE", "html")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if doc.ID != "doc123" {
+		t.Errorf("Expected document ID 'doc123', got %s", doc.ID)
+	}
+
+	if doc.Title != "Updated Document" {
+		t.Errorf("Expected document title 'Updated Document', got %s", doc.Title)
+	}
+}
+
+func TestClient_DeleteDocument(t *testing.T) {
+	// Create a test server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify the request
+		expectedPath := "/threads/delete/doc123"
+		if r.URL.Path != expectedPath {
+			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+
+		// Return success (empty response is fine for delete)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	// Create client with test server URL
+	client := NewClient("test-token")
+	client.baseURL = server.URL
+
+	// Test the method
+	err := client.DeleteDocument("doc123")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestClient_GetRecentThreads(t *testing.T) {
+	// Create a test server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify the request
+		expectedPath := "/threads/recent"
+		if r.URL.Path != expectedPath {
+			t.Errorf("Expected path %s, got %s", expectedPath, r.URL.Path)
+		}
+
+		count := r.URL.Query().Get("count")
+		if count != "5" {
+			t.Errorf("Expected count '5', got %s", count)
+		}
+
+		// Return mock recent threads
+		threads := []Document{
+			{
+				ID:       "thread1",
+				Title:    "Recent Thread 1",
+				Link:     "https://quip.com/thread1",
+				AuthorID: "user123",
+				Type:     "document",
+				Updated:  1640995400000000,
+			},
+			{
+				ID:       "thread2",
+				Title:    "Recent Thread 2", 
+				Link:     "https://quip.com/thread2",
+				AuthorID: "user456",
+				Type:     "chat",
+				Updated:  1640995300000000,
+			},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(threads)
+	}))
+	defer server.Close()
+
+	// Create client with test server URL
+	client := NewClient("test-token")
+	client.baseURL = server.URL
+
+	// Test the method
+	threads, err := client.GetRecentThreads(5)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(threads) != 2 {
+		t.Errorf("Expected 2 threads, got %d", len(threads))
+	}
+
+	if threads[0].ID != "thread1" {
+		t.Errorf("Expected first thread ID 'thread1', got %s", threads[0].ID)
+	}
+
+	if threads[0].Title != "Recent Thread 1" {
+		t.Errorf("Expected first thread title 'Recent Thread 1', got %s", threads[0].Title)
+	}
+
+	if threads[1].Type != "chat" {
+		t.Errorf("Expected second thread type 'chat', got %s", threads[1].Type)
 	}
 }
