@@ -193,14 +193,6 @@ make build
 # Run comprehensive pre-commit checks (recommended before any commit)
 make pre-commit
 
-# Individual commands
-make test          # Unit tests only
-make test-all      # Unit + integration tests  
-make lint          # Code linting
-make format        # Code formatting
-make security      # Security scan
-```
-
 ### Testing
 ```bash
 # Unit tests (mocked)
