@@ -1,6 +1,6 @@
 # Quip MCP Server
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server providing AI assistants with comprehensive Quip document access and management.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server providing AI assistants with comprehensive Quip document access and management. Compatible with Cursor IDE, Claude Desktop, and any MCP-enabled client.
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AiLCJlbnYiOnsiUVVJUF9BUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQo%3D)
 
@@ -27,12 +27,56 @@ curl -sSL https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/install.sh
 #### Manual download
 Download the appropriate binary for your platform from the [releases page](https://github.com/bug-breeder/quip-mcp/releases).
 
-### Step 2: Add to Cursor (One-click)
-After installing the binary, click the button below to add the MCP server configuration to your Cursor IDE:
+### Step 2: Add to your MCP Client
 
+#### Cursor IDE
+**Option A: Manual Setup (Recommended)**
+1. Open Cursor IDE
+2. Go to **Cursor Settings** → **Features** → **Model Context Protocol**
+3. Add this configuration:
+   ```json
+   {
+     "mcpServers": {
+       "quip": {
+         "command": "quip-mcp"
+       }
+     }
+   }
+   ```
+
+**Option B: One-Click Install (Beta)**
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AiLCJlbnYiOnsiUVVJUF9BUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQo%3D)
 
-> **Note**: This button only adds the MCP configuration to Cursor. You must install the `quip-mcp` binary first (Step 1).
+#### Claude Desktop
+1. Open Claude Desktop settings
+2. Edit your MCP configuration file:
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+3. Add this configuration:
+   ```json
+   {
+     "mcpServers": {
+       "quip": {
+         "command": "quip-mcp"
+       }
+     }
+   }
+   ```
+4. Restart Claude Desktop
+
+#### Other MCP Clients
+For any MCP-compatible client, add this server configuration:
+```json
+{
+  "mcpServers": {
+    "quip": {
+      "command": "quip-mcp"
+    }
+  }
+}
+```
+
+> **Note**: You must install the `quip-mcp` binary first (Step 1) before configuring any MCP client.
 
 ## 🔄 Updates
 
@@ -64,16 +108,9 @@ quip-mcp --version
    quip-mcp --setup
    ```
 
-3. **Add to your MCP client**
-   ```json
-   {
-     "mcpServers": {
-       "quip": {
-         "command": "quip-mcp"
-       }
-     }
-   }
-   ```
+3. **Add to your MCP client** (Cursor IDE, Claude Desktop, etc.)
+   - Follow the client-specific instructions above
+   - Add the quip-mcp server configuration
 
 That's it! Your AI assistant can now access your Quip documents.
 
@@ -91,6 +128,8 @@ That's it! Your AI assistant can now access your Quip documents.
 | `get_document_comments` | Retrieve document comments and discussions |
 
 ## 📖 Usage Examples
+
+Once configured with your MCP client (Cursor IDE, Claude Desktop, etc.), you can use natural language commands:
 
 ### Get Recent Documents
 ```
