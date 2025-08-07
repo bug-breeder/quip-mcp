@@ -503,7 +503,7 @@ func TestClient_GetRecentThreads(t *testing.T) {
 			},
 			{
 				ID:       "thread2",
-				Title:    "Recent Thread 2", 
+				Title:    "Recent Thread 2",
 				Link:     "https://quip.com/thread2",
 				AuthorID: "user456",
 				Type:     "chat",

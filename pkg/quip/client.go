@@ -69,6 +69,20 @@ type SearchResponse struct {
 	Thread Document `json:"thread"`
 }
 
+// RecentThreadsResponse represents the API response structure for recent threads
+// The API returns a map where keys are document IDs and values contain thread data
+type RecentThreadsResponse map[string]RecentThreadData
+
+type RecentThreadData struct {
+	Thread            Document `json:"thread"`
+	UserIds           []string `json:"user_ids,omitempty"`
+	SharedFolderIds   []string `json:"shared_folder_ids,omitempty"`
+	ExpandedUserIds   []string `json:"expanded_user_ids,omitempty"`
+	InvitedUserEmails []string `json:"invited_user_emails,omitempty"`
+	AccessLevels      map[string]map[string]string `json:"access_levels,omitempty"`
+	HTML              string   `json:"html,omitempty"`
+}
+
 // Comment represents a document comment
 type Comment struct {
 	ID       string `json:"id"`
@@ -325,12 +339,41 @@ func (c *Client) GetRecentThreads(limit int) ([]Document, error) {
 	}
 	defer resp.Body.Close()
 
+	// Read the response body to determine the structure
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+	
+	
+	// Try to decode as the complex map response structure
+	var response RecentThreadsResponse
+	if err := json.Unmarshal(respBody, &response); err == nil && len(response) > 0 {
+		// Convert the map to an array of documents
+		threads := make([]Document, 0, len(response))
+		for _, threadData := range response {
+			threads = append(threads, threadData.Thread)
+		}
+		return threads, nil
+	}
+	
+	// If that fails, try to decode as direct array of documents (fallback)
 	var threads []Document
-	if err := json.NewDecoder(resp.Body).Decode(&threads); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+	if err := json.Unmarshal(respBody, &threads); err == nil {
+		return threads, nil
+	}
+	
+	// If both fail, try to decode as array of SearchResponse objects (similar to search API)
+	var searchResponses []SearchResponse
+	if err := json.Unmarshal(respBody, &searchResponses); err == nil {
+		threads := make([]Document, len(searchResponses))
+		for i, item := range searchResponses {
+			threads[i] = item.Thread
+		}
+		return threads, nil
 	}
 
-	return threads, nil
+	return nil, fmt.Errorf("failed to decode response: unrecognized response format. Response body: %s", string(respBody))
 }
 
 // GetUser retrieves user information by ID
