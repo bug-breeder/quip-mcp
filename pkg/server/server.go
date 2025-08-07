@@ -122,7 +122,7 @@ func (s *Server) registerTools() {
 		"create_document",
 		mcp.WithDescription("Create a new Quip document"),
 		mcp.WithString("title", mcp.Required(), mcp.Description("The title of the new document")),
-		mcp.WithString("content", mcp.Description("The initial content of the document (HTML format)")),
+		mcp.WithString("content", mcp.Description("The initial content of the document (Markdown format)")),
 	)
 
 	s.mcpServer.AddTool(createDocTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -225,7 +225,7 @@ func (s *Server) registerTools() {
 		mcp.WithString("document_id", mcp.Required(), mcp.Description("The ID of the document to edit")),
 		mcp.WithString("content", mcp.Required(), mcp.Description("The new content for the document")),
 		mcp.WithString("operation", mcp.Description("Edit operation: REPLACE (default), APPEND, PREPEND")),
-		mcp.WithString("format", mcp.Description("Content format: html (default), markdown")),
+		mcp.WithString("format", mcp.Description("Content format: markdown (default), html")),
 	)
 
 	s.mcpServer.AddTool(editDocTool, func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -240,7 +240,7 @@ func (s *Server) registerTools() {
 		}
 
 		operation := req.GetString("operation", "REPLACE")
-		format := req.GetString("format", "html")
+		format := req.GetString("format", "markdown")
 
 		doc, err := s.quipClient.EditDocument(documentID, content, operation, format)
 		if err != nil {

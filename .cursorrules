@@ -1,0 +1,277 @@
+# Quip MCP Server - Cursor Development Rules
+
+You are an expert Go developer working on a Model Context Protocol (MCP) server for Quip integration. Follow these comprehensive guidelines to ensure code quality, maintainability, and reliability.
+
+## Development Philosophy
+
+- **Test-Driven Development (TDD)**: Write tests BEFORE implementing functionality
+- **SOLID Principles**: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
+- **Clean Code**: Write self-documenting, readable, and maintainable code
+- **Performance & Security**: Optimize for both performance and security from the start
+- **Documentation**: Code should be self-documenting with comprehensive comments for complex logic
+
+## Go-Specific Best Practices
+
+### Code Structure & Organization
+- Use clear, descriptive package names that reflect their purpose
+- Group related functionality into appropriate packages (`pkg/quip`, `pkg/server`, `pkg/config`)
+- Follow Go naming conventions: PascalCase for exported, camelCase for unexported
+- Use meaningful variable and function names that explain intent
+- Keep functions small and focused on a single responsibility
+
+### Error Handling
+- Always handle errors explicitly using Go's idiomatic error handling
+- Wrap errors with context using `fmt.Errorf("context: %w", err)`
+- Use typed errors for domain-specific error handling
+- Log errors at appropriate levels with structured logging
+- Return early on errors (guard clauses)
+
+### HTTP & API Integration
+- Use context.Context for all HTTP requests with appropriate timeouts
+- Implement proper request/response body handling with defer close
+- Use structured logging for API requests and responses
+- Implement retry logic with exponential backoff for transient failures
+- Validate all inputs and sanitize outputs
+
+### Concurrency & Performance
+- Use goroutines and channels appropriately for concurrent operations
+- Implement proper synchronization with mutexes when needed
+- Use buffered channels to prevent goroutine leaks
+- Profile and benchmark performance-critical code paths
+
+## Testing Requirements
+
+### Test-Driven Development Workflow
+1. **Red**: Write a failing test that defines the desired behavior
+2. **Green**: Write the minimal code to make the test pass
+3. **Refactor**: Improve code quality while keeping tests green
+
+### Test Categories
+- **Unit Tests**: Test individual functions and methods in isolation
+- **Integration Tests**: Test real API interactions with live services
+- **Benchmarks**: Performance tests for critical code paths
+- **Examples**: Runnable examples for public APIs
+
+### Test Structure
+```go
+func TestFunctionName(t *testing.T) {
+    // Arrange
+    setup := prepareTestData()
+    
+    // Act
+    result, err := functionUnderTest(setup)
+    
+    // Assert
+    assert.NoError(t, err)
+    assert.Equal(t, expected, result)
+}
+```
+
+### Integration Testing
+- Use build tags `//go:build integration` for integration tests
+- Require environment variables for external service credentials
+- Clean up test resources (documents, etc.) after test completion
+- Use table-driven tests for multiple scenarios
+- Mock external dependencies in unit tests, use real services in integration tests
+
+## Code Quality Standards
+
+### Before Every Commit - Run These Commands:
+1. **Format**: `gofmt -w .` or `go fmt ./...`
+2. **Lint**: `golangci-lint run`
+3. **Vet**: `go vet ./...`
+4. **Test**: `make test-all` (both unit and integration tests)
+5. **Build**: `go build ./...`
+6. **Tidy**: `go mod tidy`
+7. **Security**: `gosec ./...` (if available)
+
+### Makefile Targets (Always Use)
+```make
+# Before committing, always run:
+make pre-commit
+```
+
+This should run:
+- Format code
+- Run linters
+- Execute all tests
+- Build binaries
+- Check for security issues
+- Update dependencies
+- Generate documentation
+
+### Code Review Checklist
+- [ ] All tests pass (unit + integration)
+- [ ] Code follows Go conventions and project style
+- [ ] Error handling is comprehensive and appropriate
+- [ ] Documentation is updated (comments, README, etc.)
+- [ ] Performance implications considered
+- [ ] Security implications reviewed
+- [ ] No hardcoded secrets or sensitive data
+- [ ] Proper logging with structured fields
+
+## Documentation Standards
+
+### Code Comments
+- Use godoc format for all exported functions, types, and packages
+- Explain WHY, not just WHAT the code does
+- Include examples for complex APIs
+- Document error conditions and return values
+
+### Example:
+```go
+// GetDocument retrieves a Quip document by ID and returns its content.
+// It handles both simple document responses and complex nested thread structures
+// returned by different Quip API endpoints.
+//
+// The function first attempts to unmarshal the response as RecentThreadData
+// (which includes nested thread objects), then falls back to direct Document
+// unmarshaling for backward compatibility.
+//
+// Returns an error if the document ID is invalid, the API request fails,
+// or the response cannot be parsed.
+func (c *Client) GetDocument(id string) (*Document, error) {
+    // Implementation...
+}
+```
+
+### README Updates
+- Keep README.md current with installation and usage instructions
+- Document all environment variables and configuration options
+- Include examples of all MCP tools and their outputs
+- Update troubleshooting section when fixing bugs
+
+## MCP-Specific Guidelines
+
+### Tool Development
+- Each MCP tool should have corresponding tests
+- Validate all input parameters before processing
+- Provide clear, helpful error messages
+- Use consistent response formatting across all tools
+- Handle edge cases gracefully (empty results, API errors, etc.)
+
+### API Client Development
+- Implement robust JSON unmarshaling with fallback strategies
+- Handle different API versions and response formats
+- Use form-encoded requests where required by Quip API
+- Implement proper content type handling (markdown vs HTML)
+- Add debug logging for API requests/responses
+
+## Git Workflow
+
+### Branch Naming
+- `feature/description` for new features
+- `fix/description` for bug fixes
+- `test/description` for test improvements
+- `docs/description` for documentation updates
+
+### Commit Messages
+```
+type(scope): brief description
+
+- Detailed explanation if needed
+- Reference issue numbers: Fixes #123
+- Include breaking changes: BREAKING CHANGE: description
+```
+
+### Pre-Commit Hook
+Create a pre-commit hook that runs:
+```bash
+#!/bin/bash
+make pre-commit
+```
+
+## Performance & Security
+
+### Performance Guidelines
+- Use benchmarks for performance-critical functions
+- Profile memory usage with `go tool pprof`
+- Implement connection pooling for HTTP clients
+- Use appropriate data structures for the use case
+- Cache expensive operations when appropriate
+
+### Security Guidelines
+- Never log or expose API tokens or sensitive data
+- Validate and sanitize all external inputs
+- Use HTTPS for all external communications
+- Implement proper timeout handling
+- Use secure random generation for IDs/tokens
+
+## Automation & CI/CD
+
+### Required Automation
+- Run tests on every push
+- Check code formatting and linting
+- Build binaries for multiple platforms
+- Generate and publish documentation
+- Security scanning with tools like gosec
+- Dependency vulnerability scanning
+
+### Make Targets to Implement
+```make
+.PHONY: test test-unit test-integration test-all
+.PHONY: lint format vet build tidy clean
+.PHONY: docs security bench coverage
+.PHONY: pre-commit install release
+
+# Development workflow
+pre-commit: format lint vet test-all build tidy docs
+
+# Testing
+test-all: test-unit test-integration
+test-unit:
+	go test -v ./...
+test-integration:
+	@if [ -z "$(QUIP_API_TOKEN)" ]; then \
+		echo "❌ QUIP_API_TOKEN required for integration tests"; \
+		exit 1; \
+	fi
+	go test -v -tags=integration ./pkg/quip
+
+# Code quality
+format:
+	gofmt -w .
+	go fmt ./...
+lint:
+	golangci-lint run
+vet:
+	go vet ./...
+security:
+	gosec ./...
+
+# Build & dependency management
+build:
+	go build ./...
+tidy:
+	go mod tidy
+	go mod verify
+
+# Documentation
+docs:
+	go doc -all > docs/api.md
+
+# Cleanup
+clean:
+	go clean ./...
+	rm -f coverage.out
+```
+
+## Continuous Improvement
+
+- Regularly update dependencies and Go version
+- Monitor and address linter warnings
+- Refactor code that becomes difficult to test or understand
+- Update documentation when APIs change
+- Review and update these rules as the project evolves
+
+## Remember: Quality Before Speed
+
+- Never skip tests to meet deadlines
+- Prefer readable code over clever code
+- Document complex business logic thoroughly
+- Ask for code reviews on significant changes
+- Measure performance before optimizing
+
+---
+
+*Follow these rules religiously to maintain high code quality and team productivity. When in doubt, choose the path that makes the code more testable, readable, and maintainable.*

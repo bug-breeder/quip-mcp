@@ -1,4 +1,6 @@
 .PHONY: build test clean install help release-test release
+.PHONY: test-unit test-integration test-all format lint vet tidy
+.PHONY: docs security bench coverage pre-commit
 
 # Default target
 all: test build
@@ -85,12 +87,80 @@ inspect:
 	npx @modelcontextprotocol/inspector ./quip-mcp
 
 # Format code
-fmt:
+format:
+	@echo "🎨 Formatting code..."
+	gofmt -w .
 	go fmt ./...
+
+# Alias for format (backwards compatibility)
+fmt: format
 
 # Lint code (requires golangci-lint)
 lint:
+	@echo "🔍 Linting code..."
 	golangci-lint run
+
+# Vet code
+vet:
+	@echo "🔬 Vetting code..."
+	go vet ./...
+
+# Tidy dependencies
+tidy:
+	@echo "🧹 Tidying dependencies..."
+	go mod tidy
+	go mod verify
+
+# Security check (requires gosec)
+security:
+	@echo "🔒 Running security check..."
+	@if command -v gosec >/dev/null 2>&1; then \
+		gosec ./...; \
+	else \
+		echo "⚠️  gosec not installed. Install with: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest"; \
+	fi
+
+# Run benchmarks
+bench:
+	@echo "📊 Running benchmarks..."
+	go test -bench=. -benchmem ./...
+
+# Generate coverage report
+coverage:
+	@echo "📊 Generating coverage report..."
+	go test -v -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
+# Generate documentation
+docs:
+	@echo "📚 Generating documentation..."
+	@mkdir -p docs
+	go doc -all > docs/api.md
+	@echo "Documentation generated: docs/api.md"
+
+# Alias for test (backwards compatibility)  
+test-unit: test
+
+# Pre-commit workflow - run all quality checks
+pre-commit:
+	@echo "🚀 Running pre-commit checks..."
+	@echo ""
+	@$(MAKE) format
+	@echo ""
+	@$(MAKE) lint  
+	@echo ""
+	@$(MAKE) vet
+	@echo ""
+	@$(MAKE) test-all
+	@echo ""
+	@$(MAKE) build
+	@echo ""
+	@$(MAKE) tidy
+	@echo ""
+	@$(MAKE) docs
+	@echo ""
+	@echo "✅ All pre-commit checks passed! Ready to commit."
 
 # Test release process locally
 release-test:
@@ -108,9 +178,19 @@ install-goreleaser:
 install-lint:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
+# Install gosec (for security scanning)
+install-security:
+	go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+
 # Setup development environment
-dev-setup: install-goreleaser install-lint deps
-	@echo "Development environment setup complete!"
+dev-setup: install-goreleaser install-lint install-security deps
+	@echo "🎉 Development environment setup complete!"
+	@echo "Available tools:"
+	@echo "  - golangci-lint: Code linting"
+	@echo "  - gosec: Security scanning"
+	@echo "  - goreleaser: Release management"
+	@echo ""
+	@echo "💡 Run 'make pre-commit' before committing changes"
 
 # Check if ready for release
 release-check:
@@ -136,25 +216,49 @@ tag-major:
 # Show help
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "🚀 DEVELOPMENT WORKFLOW:"
+	@echo "  pre-commit              - Run all quality checks (format, lint, vet, test, build, tidy, docs)"
+	@echo "  dev-setup               - Setup development environment"
+	@echo ""
+	@echo "🏗️  BUILD & RUN:"
 	@echo "  build                   - Build the binary"
+	@echo "  build-all               - Build for multiple platforms"
+	@echo "  run                     - Run the binary"
+	@echo "  inspect                 - Test with MCP Inspector"
+	@echo ""
+	@echo "🧪 TESTING:"
 	@echo "  test                    - Run unit tests"
-	@echo "  test-coverage           - Run tests with coverage report"
+	@echo "  test-unit               - Run unit tests (alias)"
 	@echo "  test-integration        - Run integration tests (requires QUIP_API_TOKEN)"
 	@echo "  test-integration-single - Run specific integration test (TEST=TestName)"
 	@echo "  test-integration-bench  - Run integration benchmarks"
 	@echo "  test-all                - Run unit + integration tests"
-	@echo "  clean                   - Clean build artifacts"
+	@echo "  bench                   - Run benchmarks"
+	@echo "  coverage                - Generate coverage report"
+	@echo ""
+	@echo "🔍 CODE QUALITY:"
+	@echo "  format                  - Format code (gofmt + go fmt)"
+	@echo "  fmt                     - Format code (alias)"
+	@echo "  lint                    - Lint code (requires golangci-lint)"
+	@echo "  vet                     - Vet code (go vet)"
+	@echo "  security                - Security check (requires gosec)"
+	@echo ""
+	@echo "📚 DOCUMENTATION & DEPENDENCIES:"
+	@echo "  docs                    - Generate documentation"
 	@echo "  deps                    - Install dependencies"
-	@echo "  build-all               - Build for multiple platforms"
-	@echo "  run                     - Run the binary"
-	@echo "  inspect                 - Test with MCP Inspector"
-	@echo "  fmt                     - Format code"
-	@echo "  lint                    - Lint code"
+	@echo "  tidy                    - Tidy dependencies"
+	@echo ""
+	@echo "🗑️  CLEANUP:"
+	@echo "  clean                   - Clean build artifacts"
+	@echo ""
+	@echo "🚢 RELEASE:"
 	@echo "  release-test            - Test release process locally"
 	@echo "  release                 - Create a new release"
 	@echo "  release-check           - Check if ready for release"
-	@echo "  dev-setup               - Setup development environment"
 	@echo "  tag-patch               - Create patch version tag"
 	@echo "  tag-minor               - Create minor version tag"
 	@echo "  tag-major               - Create major version tag"
+	@echo ""
+	@echo "❓ HELP:"
 	@echo "  help                    - Show this help" 

@@ -1,16 +1,19 @@
 # Quip MCP Server
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that provides AI assistants with access to Quip documents and collaboration features.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server providing AI assistants with comprehensive Quip document access and management.
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AiLCJlbnYiOnsiUVVJUF9BUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQo%3D)
 
 ## ✨ Features
 
-- **Document Access**: Search, read, and create Quip documents
-- **User Information**: Get current user details and other users
-- **Comments**: Retrieve document comments and discussions
-- **Clean Output**: Documents are converted to beautiful markdown format
-- **Secure**: Token-based authentication with your Quip instance
+- **Full Document Lifecycle**: Create, read, edit, delete Quip documents
+- **Smart Search**: Find documents with comprehensive search capabilities  
+- **Recent Documents**: Access your recently viewed/edited documents
+- **User Management**: Get user information and details
+- **Comments**: Retrieve and manage document discussions
+- **Markdown Support**: Clean markdown formatting throughout
+- **Robust API**: Handles complex Quip API response structures
+- **Secure**: Token-based authentication with enterprise support
 
 ## 🚀 Quick Install
 
@@ -78,27 +81,45 @@ That's it! Your AI assistant can now access your Quip documents.
 
 | Tool | Description |
 |------|-------------|
-| `search_documents` | Search for documents by query |
-| `get_document` | Retrieve a specific document by ID |
-| `create_document` | Create a new document |
-| `get_user` | Get user information |
-| `get_document_comments` | Get comments for a document |
+| `get_recent_threads` | Get your recently viewed/edited documents |
+| `search_documents` | Search for documents by keyword or query |
+| `get_document` | Retrieve full document content by ID |
+| `create_document` | Create new documents with markdown content |
+| `edit_document` | Update existing documents (append/prepend/replace) |
+| `delete_document` | Delete documents permanently |
+| `get_user` | Get current user or specific user information |
+| `get_document_comments` | Retrieve document comments and discussions |
 
 ## 📖 Usage Examples
 
-### Search for documents
+### Get Recent Documents
+```
+Show my recent Quip documents
+```
+
+### Search Documents
 ```
 Search for documents about "project planning"
 ```
 
-### Read a specific document
+### Read Document Content
 ```
-Get the content of document V9T5AFuROlBN
+Get the full content of document V9T5AFuROlBN
 ```
 
-### Create a new document
+### Create New Document
 ```
-Create a document titled "Meeting Notes" with content about today's team meeting
+Create a document titled "Meeting Notes" with markdown content about today's team meeting
+```
+
+### Edit Existing Document
+```
+Add a new section to document ABC123 about next week's goals
+```
+
+### Delete Document
+```
+Delete the test document XYZ789
 ```
 
 ## ⚙️ Configuration
@@ -160,16 +181,44 @@ export QUIP_API_TOKEN="your-token-here"
 
 ## 🔧 Development
 
-### Build from source
+### Build from Source
 ```bash
 git clone https://github.com/bug-breeder/quip-mcp.git
 cd quip-mcp
-go build -o quip-mcp .
+make build
 ```
 
-### Run tests
+### Quality Assurance Workflow
 ```bash
-make test
+# Run comprehensive pre-commit checks (recommended before any commit)
+make pre-commit
+
+# Individual commands
+make test          # Unit tests only
+make test-all      # Unit + integration tests  
+make lint          # Code linting
+make format        # Code formatting
+make security      # Security scan
+```
+
+### Testing
+```bash
+# Unit tests (mocked)
+make test-unit
+
+# Integration tests (requires QUIP_API_TOKEN)
+export QUIP_API_TOKEN="your-token"
+make test-integration
+
+# Run all tests
+make test-all
+```
+
+### Development Tools
+```bash
+make help          # Show all available commands
+make dev-setup     # Install development dependencies
+make coverage      # Generate test coverage report
 ```
 
 ## 📄 License

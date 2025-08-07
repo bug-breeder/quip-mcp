@@ -95,7 +95,7 @@ func TestIntegration_DocumentCRUD(t *testing.T) {
 	// Test document lifecycle with timestamp to ensure uniqueness
 	timestamp := time.Now().Unix()
 	testTitle := fmt.Sprintf("Integration Test Document %d", timestamp)
-	testContent := "<p>This is a test document created by integration tests. It should be deleted automatically.</p>"
+	testContent := "This is a test document created by integration tests. It should be deleted automatically."
 
 	// 1. CREATE: Create a test document
 	t.Log("🔄 Creating test document...")
@@ -142,8 +142,8 @@ func TestIntegration_DocumentCRUD(t *testing.T) {
 
 	// 3. UPDATE: Edit the document
 	t.Log("🔄 Updating test document...")
-	updatedContent := "<p>This content has been updated by integration tests.</p>"
-	updatedDoc, err := client.EditDocument(documentID, updatedContent, "REPLACE", "html")
+	updatedContent := "This content has been updated by integration tests."
+	updatedDoc, err := client.EditDocument(documentID, updatedContent, "REPLACE", "markdown")
 	if err != nil {
 		t.Fatalf("EditDocument failed: %v", err)
 	}
