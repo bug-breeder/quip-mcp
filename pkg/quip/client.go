@@ -69,6 +69,20 @@ type SearchResponse struct {
 	Thread Document `json:"thread"`
 }
 
+// RecentThreadsResponse represents the API response structure for recent threads
+// The API returns a map where keys are document IDs and values contain thread data
+type RecentThreadsResponse map[string]RecentThreadData
+
+type RecentThreadData struct {
+	Thread            Document                     `json:"thread"`
+	UserIds           []string                     `json:"user_ids,omitempty"`
+	SharedFolderIds   []string                     `json:"shared_folder_ids,omitempty"`
+	ExpandedUserIds   []string                     `json:"expanded_user_ids,omitempty"`
+	InvitedUserEmails []string                     `json:"invited_user_emails,omitempty"`
+	AccessLevels      map[string]map[string]string `json:"access_levels,omitempty"`
+	HTML              string                       `json:"html,omitempty"`
+}
+
 // Comment represents a document comment
 type Comment struct {
 	ID       string `json:"id"`
@@ -209,8 +223,9 @@ func (c *Client) SearchDocuments(query string, limit int) (*SearchResult, error)
 	return result, nil
 }
 
-// GetDocument retrieves a document by ID
+// GetDocument retrieves a document by ID using v1 API and includes HTML content
 func (c *Client) GetDocument(id string) (*Document, error) {
+	// Use v1 API to get document with HTML content
 	endpoint := fmt.Sprintf("/threads/%s", id)
 
 	resp, err := c.makeRequest("GET", endpoint, nil)
@@ -219,8 +234,25 @@ func (c *Client) GetDocument(id string) (*Document, error) {
 	}
 	defer resp.Body.Close()
 
+	// Read the response body to check the structure
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Try to decode as the complex structure first (like CreateDocument and GetRecentThreads)
+	var response RecentThreadData
+	if err := json.Unmarshal(respBody, &response); err == nil && response.Thread.ID != "" {
+		// The HTML content is in the response.HTML field, not response.Thread.HTML
+		if response.HTML != "" {
+			response.Thread.HTML = response.HTML
+		}
+		return &response.Thread, nil
+	}
+
+	// Fallback to direct document structure
 	var doc Document
-	if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+	if err := json.Unmarshal(respBody, &doc); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
@@ -232,7 +264,7 @@ func (c *Client) CreateDocument(title, content string) (*Document, error) {
 	formData := map[string]string{
 		"title":   title,
 		"content": content,
-		"format":  "html",
+		"format":  "markdown",
 	}
 
 	resp, err := c.makeFormRequest("POST", "/threads/new-document", formData)
@@ -241,12 +273,19 @@ func (c *Client) CreateDocument(title, content string) (*Document, error) {
 	}
 	defer resp.Body.Close()
 
-	var doc Document
-	if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+	// Read the response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// The CreateDocument API returns the same structure as RecentThreads - an object with a "thread" property
+	var response RecentThreadData
+	if err := json.Unmarshal(respBody, &response); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	return &doc, nil
+	return &response.Thread, nil
 }
 
 // GetDocumentComments retrieves comments for a document
@@ -265,6 +304,125 @@ func (c *Client) GetDocumentComments(documentID string) ([]Comment, error) {
 	}
 
 	return comments, nil
+}
+
+// EditDocument edits an existing document
+func (c *Client) EditDocument(documentID, content, operation, format string) (*Document, error) {
+	formData := map[string]string{
+		"thread_id": documentID,
+		"content":   content,
+	}
+
+	// Convert operation to location parameter as per Quip API v1
+	// For now, map "REPLACE" to location=0 (APPEND)
+	// In a full implementation, we'd need section_id for true replacement
+	if operation == "REPLACE" || operation == "" {
+		formData["location"] = "0" // APPEND - adds to end of document
+	} else if operation == "APPEND" {
+		formData["location"] = "0" // APPEND
+	} else if operation == "PREPEND" {
+		formData["location"] = "1" // PREPEND
+	} else {
+		formData["location"] = "0" // Default to APPEND
+	}
+
+	if format != "" {
+		formData["format"] = format
+	} else {
+		formData["format"] = "markdown"
+	}
+
+	endpoint := "/threads/edit-document"
+	resp, err := c.makeFormRequest("POST", endpoint, formData)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// The edit-document API returns the same complex structure as other APIs
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Try to decode as the complex structure first
+	var response RecentThreadData
+	if err := json.Unmarshal(respBody, &response); err == nil && response.Thread.ID != "" {
+		return &response.Thread, nil
+	}
+
+	// Fallback to direct document structure
+	var doc Document
+	if err := json.Unmarshal(respBody, &doc); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &doc, nil
+}
+
+// DeleteDocument deletes a document
+func (c *Client) DeleteDocument(documentID string) error {
+	formData := map[string]string{
+		"thread_id": documentID,
+		"wipeout":   "false", // Set to true for permanent deletion
+	}
+	endpoint := "/threads/delete"
+	resp, err := c.makeFormRequest("POST", endpoint, formData)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+// GetRecentThreads retrieves recent threads for the current user
+func (c *Client) GetRecentThreads(limit int) ([]Document, error) {
+	endpoint := "/threads/recent"
+	if limit > 0 {
+		endpoint += fmt.Sprintf("?count=%d", limit)
+	}
+
+	resp, err := c.makeRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body to determine the structure
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Try to decode as the complex map response structure
+	var response RecentThreadsResponse
+	if err := json.Unmarshal(respBody, &response); err == nil && len(response) > 0 {
+		// Convert the map to an array of documents
+		threads := make([]Document, 0, len(response))
+		for _, threadData := range response {
+			threads = append(threads, threadData.Thread)
+		}
+		return threads, nil
+	}
+
+	// If that fails, try to decode as direct array of documents (fallback)
+	var threads []Document
+	if err := json.Unmarshal(respBody, &threads); err == nil {
+		return threads, nil
+	}
+
+	// If both fail, try to decode as array of SearchResponse objects (similar to search API)
+	var searchResponses []SearchResponse
+	if err := json.Unmarshal(respBody, &searchResponses); err == nil {
+		threads := make([]Document, len(searchResponses))
+		for i, item := range searchResponses {
+			threads[i] = item.Thread
+		}
+		return threads, nil
+	}
+
+	return nil, fmt.Errorf("failed to decode response: unrecognized response format. Response body: %s", string(respBody))
 }
 
 // GetUser retrieves user information by ID

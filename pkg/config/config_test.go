@@ -8,6 +8,9 @@ import (
 )
 
 func TestConfigManager_LoadSave(t *testing.T) {
+	// Unset environment variable for this test
+	t.Setenv("QUIP_API_TOKEN", "")
+
 	// Create temporary directory for test
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.yaml")
@@ -72,6 +75,9 @@ func TestConfigManager_EnvironmentOverride(t *testing.T) {
 }
 
 func TestConfigManager_NoConfigFile(t *testing.T) {
+	// Unset environment variable for this test
+	t.Setenv("QUIP_API_TOKEN", "")
+
 	// Create config manager with non-existent path
 	cm := &ConfigManager{configPath: "/tmp/non-existent-config.yaml"}
 
@@ -112,6 +118,9 @@ func TestConfigManager_HasValidToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Unset environment variable for this test
+			t.Setenv("QUIP_API_TOKEN", "")
+
 			// Create temporary directory for test
 			tmpDir := t.TempDir()
 			configPath := filepath.Join(tmpDir, "config.yaml")
