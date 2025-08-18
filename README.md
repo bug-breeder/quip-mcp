@@ -2,7 +2,7 @@
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server providing AI assistants with comprehensive Quip document access and management.
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AiLCJlbnYiOnsiUVVJUF9BUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQo%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AifQo=)
 
 ## ✨ Features
 
@@ -30,9 +30,84 @@ Download the appropriate binary for your platform from the [releases page](https
 ### Step 2: Add to Cursor (One-click)
 After installing the binary, click the button below to add the MCP server configuration to your Cursor IDE:
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AiLCJlbnYiOnsiUVVJUF9BUElfVE9LRU4iOiJZT1VSX0FQSV9UT0tFTiJ9fQo%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AifQo=)
 
 > **Note**: This button only adds the MCP configuration to Cursor. You must install the `quip-mcp` binary first (Step 1).
+
+
+## ⚡ Quick Start
+
+1. **Get your API token**
+   - Visit your Quip instance: `https://your-company.quip.com/dev/token`
+   - Generate a new API token
+
+2. **Configure the server**
+   ```bash
+   quip-mcp --setup
+   ```
+
+3. **Add to your MCP client**
+   See the instructions below for your specific client.
+
+That's it! Your AI assistant can now access your Quip documents.
+
+## 🔌 MCP Client Configuration
+
+### Cursor
+
+1.  Click the "Add to Cursor" button at the top of this README.
+2.  Alternatively, you can add the server manually in Cursor's settings. Go to `File > Settings > MCP` and add a new server with the following configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "quip": {
+          "command": "quip-mcp"
+        }
+      }
+    }
+    ```
+
+### Claude
+
+You can add the Quip MCP server to Claude using two methods:
+
+**1. Command Line**
+
+Open your terminal and run the following command:
+
+```bash
+claude mcp add quip -- quip-mcp
+```
+
+**2. Configuration File**
+
+Add the following directly into your claude desktop app's setting or to your `claude_desktop_config.json` file:
+
+```json
+{
+  "mcp_servers": [
+    {
+      "name": "quip",
+      "command": ["quip-mcp"]
+    }
+  ]
+}
+```
+
+### Other Clients
+
+For other MCP clients, you can typically add a new server in the settings. Use the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "quip": {
+      "command": "quip-mcp"
+    }
+  }
+}
+```
 
 ## 🔄 Updates
 
@@ -52,30 +127,6 @@ The update script will:
 ```bash
 quip-mcp --version
 ```
-
-## ⚡ Quick Start
-
-1. **Get your API token**
-   - Visit your Quip instance: `https://your-company.quip.com/dev/token`
-   - Generate a new API token
-
-2. **Configure the server**
-   ```bash
-   quip-mcp --setup
-   ```
-
-3. **Add to your MCP client**
-   ```json
-   {
-     "mcpServers": {
-       "quip": {
-         "command": "quip-mcp"
-       }
-     }
-   }
-   ```
-
-That's it! Your AI assistant can now access your Quip documents.
 
 ## 🛠️ Available Tools
 
