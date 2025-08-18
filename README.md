@@ -2,7 +2,7 @@
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server providing AI assistants with comprehensive Quip document access and management.
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AifQo=)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?url=https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/.github/cursor-mcp.json)
 
 ## ✨ Features
 
@@ -30,7 +30,7 @@ Download the appropriate binary for your platform from the [releases page](https
 ### Step 2: Add to Cursor (One-click)
 After installing the binary, click the button below to add the MCP server configuration to your Cursor IDE:
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AifQo=)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?url=https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/.github/cursor-mcp.json)
 
 > **Note**: This button only adds the MCP configuration to Cursor. You must install the `quip-mcp` binary first (Step 1).
 
@@ -61,7 +61,7 @@ That's it! Your AI assistant can now access your Quip documents.
     ```json
     {
       "mcpServers": {
-        "quip": {
+        "quip-mcp": {
           "command": "quip-mcp"
         }
       }
@@ -77,7 +77,7 @@ You can add the Quip MCP server to Claude using two methods:
 Open your terminal and run the following command:
 
 ```bash
-claude mcp add quip -- quip-mcp
+claude mcp add quip-mcp -- quip-mcp
 ```
 
 **2. Configuration File**
@@ -88,7 +88,7 @@ Add the following directly into your claude desktop app's setting or to your `cl
 {
   "mcp_servers": [
     {
-      "name": "quip",
+      "name": "quip-mcp",
       "command": ["quip-mcp"]
     }
   ]
@@ -102,7 +102,7 @@ For other MCP clients, you can typically add a new server in the settings. Use t
 ```json
 {
   "mcpServers": {
-    "quip": {
+    "quip-mcp": {
       "command": "quip-mcp"
     }
   }
