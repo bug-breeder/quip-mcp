@@ -2,7 +2,7 @@
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server providing AI assistants with comprehensive Quip document access and management.
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?url=https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/.github/cursor-mcp.json)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/en/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AifQ%3D%3D)
 
 ## ✨ Features
 
@@ -30,7 +30,7 @@ Download the appropriate binary for your platform from the [releases page](https
 ### Step 2: Add to Cursor (One-click)
 After installing the binary, click the button below to add the MCP server configuration to your Cursor IDE:
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?url=https://raw.githubusercontent.com/bug-breeder/quip-mcp/main/.github/cursor-mcp.json)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/en/install-mcp?name=quip-mcp&config=eyJjb21tYW5kIjoicXVpcC1tY3AifQ%3D%3D)
 
 > **Note**: This button only adds the MCP configuration to Cursor. You must install the `quip-mcp` binary first (Step 1).
 
